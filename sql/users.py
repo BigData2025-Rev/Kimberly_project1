@@ -14,64 +14,73 @@ from exceptions.custom_exception import CustomException
 
 
 # Create a new user in the database
-def create_user(connection, username : str, password : str, isAdmin : bool) -> int:
-    cursor = connection.cursor(dictionary=True)
-    #check if user already exists
-    cursor.execute(f"SELECT * FROM users WHERE username = '{username}'")
-    if cursor.fetchone() is not None:
-        raise CustomException("Username already exists")
-    cursor.execute(
+class Users:
+    def __init__(self, connection):
+        # Store the database connection as a class variable
+        self.connection = connection
+
+    # Create a new user in the database
+    def create_user(self, username: str, password: str, is_admin: bool) -> int:
+        cursor = self.connection.cursor(dictionary=True)
+        # Check if the user already exists
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        if cursor.fetchone() is not None:
+            raise CustomException("Username already exists")
+        cursor.execute(
             """
             INSERT INTO users (username, password, isAdmin) 
             VALUES (%s, %s, %s)
-            """, 
-            (username, password, isAdmin)
+            """,
+            (username, password, is_admin),
         )
-    connection.commit()
-    return cursor.lastrowid
+        self.connection.commit()
+        return cursor.lastrowid
 
-# Get a user from the database
-def get_user(connection, userID : int) -> dict:
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(f"SELECT * FROM users WHERE userID = {userID}")
-    return cursor.fetchone()
+    # Get a user from the database
+    def get_user(self, user_id: int) -> dict:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE userID = %s", (user_id,))
+        return cursor.fetchone()
 
-# Get all users from the database
-def get_all_users(connection) -> list:
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users")
-    return cursor.fetchall()
+    # Get all users from the database
+    def get_all_users(self) -> list:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users")
+        return cursor.fetchall()
 
-# Add an order to the database
-def add_order(connection, userID : int, bookID : int, orderDate : str) -> int:
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(
+    # Add an order to the database
+    def add_order(self, user_id: int, book_id: int, order_date: str) -> int:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(
             """
             INSERT INTO orders (userID, bookID, orderDate) 
             VALUES (%s, %s, %s)
-            """, 
-            (userID, bookID, orderDate)
+            """,
+            (user_id, book_id, order_date),
         )
-    connection.commit()
-    return cursor.lastrowid
+        self.connection.commit()
+        return cursor.lastrowid
 
-# Get an order from the database
-def get_order(connection, orderID : int) -> dict:
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(f"SELECT * FROM orders WHERE orderID = {orderID}")
-    return cursor.fetchone()
+    # Get an order from the database
+    def get_order(self, order_id: int) -> dict:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM orders WHERE orderID = %s", (order_id,))
+        return cursor.fetchone()
 
-# Get all orders from the database
-def get_all_orders(connection) -> list:
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM orders")
-    return cursor.fetchall()
+    # Get all orders from the database
+    def get_all_orders(self) -> list:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM orders")
+        return cursor.fetchall()
 
-# Login as a user
-def login(connection, username : str, password : str) -> int:
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(f"SELECT userID FROM users WHERE username = '{username}' AND password = '{password}'")
-    user = cursor.fetchone()
-    if user is None:
-        raise CustomException("Invalid username or password")
-    return user['userID']
+    # Login as a user
+    def login(self, username: str, password: str) -> int:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT userID FROM users WHERE username = %s AND password = %s",
+            (username, password),
+        )
+        user = cursor.fetchone()
+        if user is None:
+            raise CustomException("Invalid username or password")
+        return user["userID"]

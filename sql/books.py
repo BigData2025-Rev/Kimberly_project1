@@ -17,64 +17,69 @@
 # - categoryID: A unique Identification number for each category
 
 
-#Searches for books in the dataset by title
-def get_book_by_title(connection, title : str) -> dict:
-    cursor = connection.cursor(dictionary=True)
-    query = "SELECT * FROM books WHERE LOWER(title) LIKE LOWER(%s)"
-    cursor.execute(query, (f"%{title}%",))
-    return cursor.fetchall()
+class Books:
+    def __init__(self, connection):
+        # Store the database connection as a class variable
+        self.connection = connection
 
-def get_category(connection, categoryID : int) -> dict:
-    pass
+    # Searches for books in the dataset by title
+    def get_book_by_title(self, title: str) -> dict:
+        cursor = self.connection.cursor(dictionary=True)
+        query = "SELECT * FROM books WHERE LOWER(title) LIKE LOWER(%s)"
+        cursor.execute(query, (f"%{title}%",))
+        return cursor.fetchall()
 
-#Used to return all books in the dataset
-def get_all_books(connection, start : int = 0, limit : int = 20) -> list:
-    cursor = connection.cursor(dictionary=True)
-    query = "SELECT * FROM books LIMIT %s OFFSET %s"
-    cursor.execute(query, (limit, start))
-    return cursor.fetchall()
+    # Returns all books in the dataset, ordered alphabetically by title
+    def get_all_books(self, start: int = 0, limit: int = 20) -> list:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT * FROM books
+            ORDER BY title
+            LIMIT %s OFFSET %s
+            """,
+            (limit, start)
+        )
+        return cursor.fetchall()
 
-#Returns a table listing all categories + number of books, ordered by the # of books in each category
-def get_all_categories(connection, start : int = 0, limit : int = 20) -> list:
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(
-        """
-        SELECT Categories.categoryID, categoryName, COUNT(bookID) as bookCount
-        FROM Categories
-        JOIN BooksCategories ON Categories.categoryID = BooksCategories.categoryID
-        GROUP BY Categories.categoryID
-        ORDER BY bookCount DESC
-        LIMIT %s OFFSET %s
-        """,
-        (limit, start)
-    )
-    return cursor.fetchall()
+    # Returns a table listing all categories + number of books, ordered by the number of books in each category
+    def get_all_categories(self, start: int = 0, limit: int = 20) -> list:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT Categories.categoryID, categoryName, COUNT(bookID) as bookCount
+            FROM Categories
+            JOIN BooksCategories ON Categories.categoryID = BooksCategories.categoryID
+            GROUP BY Categories.categoryID
+            ORDER BY bookCount DESC
+            LIMIT %s OFFSET %s
+            """,
+            (limit, start)
+        )
+        return cursor.fetchall()
 
-    
-
-#Returns a table of books in a specific category
-#Returns bookId, title, price, Categories
-def get_books_by_category(connection, start : int, limit : int, categoryID : int) -> list:
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(
-        """
-        SELECT Books.bookID, title, startingPrice, categoryName
-        FROM Books
+    # Returns a table of books in a specific category
+    # Returns bookId, title, price, and categoryName
+    def get_books_by_category(self, start: int, limit: int, categoryID: int) -> list:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT Books.bookID, title, startingPrice, categoryName
+            FROM Books
             JOIN BooksCategories ON Books.bookID = BooksCategories.bookID
             JOIN Categories ON BooksCategories.categoryID = Categories.categoryID
-        WHERE Categories.categoryID = %s
-        LIMIT %s OFFSET %s
-        """,
-        (categoryID, limit, start)
-    )
-    
-    
-    return cursor.fetchall()
+            WHERE Categories.categoryID = %s
+            LIMIT %s OFFSET %s
+            """,
+            (categoryID, limit, start)
+        )
+        return cursor.fetchall()
 
-def get_book_count(connection) -> int:
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT COUNT(*) as count FROM books")
-    return cursor.fetchone()['count']
+    # Returns the total count of books in the dataset
+    def get_book_count(self) -> int:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("SELECT COUNT(*) as count FROM books")
+        return cursor.fetchone()['count']
 
 
 #To be implemented
