@@ -5,7 +5,7 @@ import os
 load_dotenv()
 
 # Create a connection to the database, and create the database if it doesn't exist
-def connect() -> mysql.connector.connection.MySQLConnection:
+def connect():
     connection = mysql.connector.connect(
         host=os.getenv('HOST'),
         user=os.getenv('USER'),

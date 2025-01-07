@@ -9,7 +9,6 @@ Books table:
 - title: The name under which the book was published
 - authors: Names of the authors of the book.
 - description: A brief description of the book. May be null
-- categories: Genre categories the book belongs to
 - publisher: The publisher of the book
 - startingPrice: The starting price of the book
 - publishedMonth: The date when the book was published
