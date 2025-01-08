@@ -19,7 +19,6 @@
 
 class Books:
     def __init__(self, connection):
-        # Store the database connection as a class variable
         self.connection = connection
 
     # Searches for books in the dataset by title
@@ -34,7 +33,7 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT * FROM books
+            SELECT bookId, bookTitle, authors FROM books
             ORDER BY title
             LIMIT %s OFFSET %s
             """,
@@ -64,7 +63,7 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT Books.bookID, title, startingPrice, categoryName
+            SELECT Books.bookID, title, authors, categoryName
             FROM Books
             JOIN BooksCategories ON Books.bookID = BooksCategories.bookID
             JOIN Categories ON BooksCategories.categoryID = Categories.categoryID
@@ -80,9 +79,27 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute("SELECT COUNT(*) as count FROM books")
         return cursor.fetchone()['count']
+    
+    # Returns a book by its ID + category
+    def get_book_by_id(self, bookID: int) -> dict:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT Books.bookID, title, authors, description, publisher, startingPrice, publishedMonth, publishedYear, categoryName
+            FROM Books
+            JOIN BooksCategories ON Books.bookID = BooksCategories.bookID
+            JOIN Categories ON BooksCategories.categoryID = Categories.categoryID
+            WHERE Books.bookID = %s
+            """,
+            (bookID,)
+        )
+        results = cursor.fetchall()
+        if len(results) == 0:
+            return None
+        return results[0]
 
 
-#To be implemented
-def get_books_by_author(connection, author : str) -> list:
-    pass
+    #To be implemented
+    def get_books_by_author(self, author : str) -> list:
+        pass
 

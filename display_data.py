@@ -40,9 +40,6 @@ def print_table(data : list[dict]):
         for col in df.columns:
             if is_string_dtype(df[col]):
                 df[col] = df[col].str.wrap(WRAP_WIDTH)
-
-        if 'description' in df.columns:
-            df = df.drop(columns=['description'])
         print(tabulate.tabulate(df, headers='keys', tablefmt='grid'))
     input("Hit enter to continue")
     clear_screen()
@@ -58,9 +55,6 @@ def print_table_paged(data : list[dict], has_next = False, has_prev = False):
         for col in df.columns:
             if is_string_dtype(df[col]):
                 df[col] = df[col].str.wrap(WRAP_WIDTH)
-
-        if 'description' in df.columns:
-            df = df.drop(columns=['description'])
 
         print(tabulate.tabulate(df, headers='keys', tablefmt='grid'))
 
@@ -78,3 +72,6 @@ def print_table_paged(data : list[dict], has_next = False, has_prev = False):
     else:
         return 0
     
+#Prints a detailed view of a book, including category, description
+def print_book():
+    pass

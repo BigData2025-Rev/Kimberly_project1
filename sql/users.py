@@ -13,16 +13,13 @@ from exceptions.custom_exception import CustomException
 # - orderDate: The date when the order was made
 
 
-# Create a new user in the database
 class Users:
     def __init__(self, connection):
-        # Store the database connection as a class variable
         self.connection = connection
 
     # Create a new user in the database
     def create_user(self, username: str, password: str, is_admin: bool) -> int:
         cursor = self.connection.cursor(dictionary=True)
-        # Check if the user already exists
         cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         if cursor.fetchone() is not None:
             raise CustomException("Username already exists")
@@ -67,10 +64,34 @@ class Users:
         cursor.execute("SELECT * FROM orders WHERE orderID = %s", (order_id,))
         return cursor.fetchone()
 
-    # Get all orders from the database
-    def get_all_orders(self) -> list:
+    # Get all orders for a particular user, returning book name, order date, and order ID
+    def get_all_user_orders(self, start : int, limit : int, userID : int) -> list:
         cursor = self.connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM orders")
+        cursor.execute(
+            """
+            SELECT Orders.orderID, Books.title, Orders.orderDate
+            FROM Orders
+            JOIN Books ON Orders.bookID = Books.bookID
+            WHERE Orders.userID = %s
+            LIMIT %s OFFSET %s
+            """,
+            (userID, limit, start)
+        )
+        return cursor.fetchall()
+    
+    # Get all orders, orderID, userName, bookName, orderDate
+    def get_all_orders(self, start : int, limit : int) -> list:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT Orders.orderID, Users.username, Books.title, Orders.orderDate
+            FROM Orders
+            JOIN Users ON Orders.userID = Users.userID
+            JOIN Books ON Orders.bookID = Books.bookID
+            LIMIT %s OFFSET %s
+            """,
+            (limit, start)
+        )
         return cursor.fetchall()
 
     # Login as a user
