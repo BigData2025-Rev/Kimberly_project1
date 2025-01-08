@@ -85,7 +85,7 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT Books.bookID, title, authors, description, publisher, startingPrice, publishedMonth, publishedYear, GROUP_CONCAT(categoryName SEPARATOR ', ') as categories
+            SELECT Books.bookID, title, authors, description, publisher, startingPrice as price, publishedMonth as pubMonth, publishedYear as pubYear, GROUP_CONCAT(categoryName SEPARATOR ', ') as categories
             FROM Books
             JOIN BooksCategories ON Books.bookID = BooksCategories.bookID
             JOIN Categories ON BooksCategories.categoryID = Categories.categoryID
@@ -94,8 +94,9 @@ class Books:
             (bookID,)
         )
         results = cursor.fetchall()
-        if len(results) == 0:
+        if not results or len(results) == 0 or results[0]['bookID'] is None:
             return None
+        
         return results[0]
 
     # Adds a book to the database

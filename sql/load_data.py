@@ -64,36 +64,4 @@ def load_data(connection, books, force=False):
     #data = read_csv(FILE_NAME)
     create_tables(cursor)
     add_data(FILE_NAME, connection, books)
-    # for row in data[1:]:
-    #     if row[2] == '':
-    #         row[2] = 'description not available'
-    #     book_id = books.add_book(cursor, {'title': row[0], 'authors': row[1], 'description': row[2], 'publisher': row[4], 
-    #                       'startingPrice': row[5], 'publishedMonth': row[6], 'publishedYear': row[7]})
-    #     categories = row[3].split(',')
-    #     categories = [category.strip() for category in categories]
-    #     if len(categories) == 0:
-    #         categories = ['Other']
-    #     for category in categories:
-    #         cursor.execute(f"SELECT categoryID FROM Categories WHERE categoryName = '{category}'")
-    #         cat = cursor.fetchone()
-    #         if cat is None:
-    #             cursor.execute(f"INSERT INTO Categories (categoryName) VALUES ('{category}')")
-    #             categoryID = cursor.lastrowid
-    #         else:
-    #             categoryID = cat[0]
-    #         cursor.execute(f"INSERT INTO BooksCategories (bookID, categoryID) VALUES ('{book_id}', '{categoryID}')")
-
-
-    
-
-# #Adds a book to the database
-# def add_book(cursor, book : dict) -> int:
-#     cursor.execute(
-#             """
-#             INSERT INTO books (title, authors, description, publisher, startingPrice, publishedMonth, publishedYear) 
-#             VALUES (%s, %s, %s, %s, %s, %s, %s)
-#             """, 
-#             (book['title'], book['authors'], book['description'], book['publisher'], book['startingPrice'], book['publishedMonth'], book['publishedYear'])
-#         )
-#     return cursor.lastrowid
     

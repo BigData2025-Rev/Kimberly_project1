@@ -30,8 +30,8 @@ def options_prompt(options : list[str], prompt : str, clear = True) -> int:
 
 
 # Displays a table of data to the user
-# Only use this for small tables
-def print_table(data : list[dict]):
+# Only use this for small tables (1-2 books)
+def print_book_table(data : list[dict]):
     clear_screen()
     if len(data) == 0:
         print("No data found.")
@@ -39,7 +39,11 @@ def print_table(data : list[dict]):
         df = pd.DataFrame(data)
         for col in df.columns:
             if is_string_dtype(df[col]):
-                df[col] = df[col].str.wrap(WRAP_WIDTH)
+                df[col] = df[col].str.wrap(20)
+        #set description wrap width to 80
+        df['description'] = df['description'].str.wrap(80)
+
+
         print(tabulate.tabulate(df, headers='keys', tablefmt='grid'))
     input("Hit enter to continue")
     clear_screen()

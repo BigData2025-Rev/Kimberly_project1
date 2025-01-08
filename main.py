@@ -5,7 +5,7 @@ from display_data import *
 from exceptions.custom_exception import CustomException
 import datetime
 
-PAGING_SIZE = 20
+PAGING_SIZE = 15
 
 # Connect to the database
 (cursor, connection) = connect.connect()
@@ -76,31 +76,37 @@ def order_book():
 
 
 def view_books():
-    selected = options_prompt(["View all Books", "Search for a Book", "View Book Details", "View Categories", "Search by Category"], "What would you like to do?")
-    if selected == 0:
-        show_paged_table(book_manager.get_all_books)
-    elif selected == 1:
-        title = input("Enter the title of the book you would like to search for: ")
-        books = book_manager.get_book_by_title(title)
-        print_table(books)
-    elif selected == 2:
-        try:
-            bookID = int(input("Enter the book ID: "))
-        except:
-            print("Invalid input. Please enter a number")
-            return
-        book = book_manager.get_book_by_id(bookID)
-        print_table([book])
-    elif selected == 3:
-        show_paged_table(book_manager.get_all_categories)
-    elif selected == 4:
-        try:
-            categoryID = int(input("Enter the category ID: "))
-        except:
-            print("Invalid input. Please enter a number")
-            return
-        show_paged_table(book_manager.get_books_by_category, categoryID)
-        pass
+    while True:
+        selected = options_prompt(["View all Books", "Search for a Book", "View Book Details", "View Categories", "Search by Category", "Back"], "What would you like to do?")
+        if selected == 0:
+            show_paged_table(book_manager.get_all_books)
+        elif selected == 1:
+            title = input("Enter the title of the book you would like to search for: ")
+            books = book_manager.get_book_by_title(title)
+            print_book_table(books) #Note to make this a paged table
+        elif selected == 2:
+            try:
+                bookID = int(input("Enter the book ID: "))
+            except:
+                print("Invalid input. Please enter a number")
+                return
+            book = book_manager.get_book_by_id(bookID)
+            if book is None:
+                print("Book not found")
+                input("Press enter to continue")
+                continue
+            print_book_table([book])
+        elif selected == 3:
+            show_paged_table(book_manager.get_all_categories)
+        elif selected == 4:
+            try:
+                categoryID = int(input("Enter the category ID: "))
+            except:
+                print("Invalid input. Please enter a number")
+                return
+            show_paged_table(book_manager.get_books_by_category, categoryID)
+        else:
+            break
 
 def view_orders(userID):
     show_paged_table(user_manager.get_all_user_orders, userID)
