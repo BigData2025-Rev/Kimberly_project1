@@ -72,6 +72,4 @@ def print_table_paged(data : list[dict], has_next = False, has_prev = False):
     else:
         return 0
     
-#Prints a detailed view of a book, including category, description
-def print_book():
-    pass
+

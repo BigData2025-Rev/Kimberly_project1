@@ -33,7 +33,7 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT bookId, bookTitle, authors FROM books
+            SELECT bookId, title, authors FROM books
             ORDER BY title
             LIMIT %s OFFSET %s
             """,
@@ -85,7 +85,7 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT Books.bookID, title, authors, description, publisher, startingPrice, publishedMonth, publishedYear, categoryName
+            SELECT Books.bookID, title, authors, description, publisher, startingPrice, publishedMonth, publishedYear, GROUP_CONCAT(categoryName SEPARATOR ', ') as categories
             FROM Books
             JOIN BooksCategories ON Books.bookID = BooksCategories.bookID
             JOIN Categories ON BooksCategories.categoryID = Categories.categoryID
@@ -98,8 +98,30 @@ class Books:
             return None
         return results[0]
 
+    # Adds a book to the database
+    def add_book(self, book: dict) -> int:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            INSERT INTO books (title, authors, description, publisher, startingPrice, publishedMonth, publishedYear) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (book['title'], book['authors'], book['description'], book['publisher'], book['startingPrice'], book['publishedMonth'], book['publishedYear'])
+        )
+        self.connection.commit()
+        return cursor.lastrowid
+    
+    # Deletes a book from the database
+    def delete_book(self, bookID: int):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("DELETE FROM books WHERE bookID = %s", (bookID,))
+        self.connection.commit()
 
-    #To be implemented
-    def get_books_by_author(self, author : str) -> list:
-        pass
+    # Updates the details of a book in the database
+    def update_book(self, bookID: int, new_price: float):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("UPDATE books SET startingPrice = %s WHERE bookID = %s", (new_price, bookID))
+        self.connection.commit()
+        return cursor.rowcount
+
 

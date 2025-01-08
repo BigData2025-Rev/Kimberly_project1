@@ -40,9 +40,15 @@ class Users:
         return cursor.fetchone()
 
     # Get all users from the database
-    def get_all_users(self) -> list:
+    def get_all_users(self, start : int, limit : int) -> list:
         cursor = self.connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users")
+        cursor.execute(
+            """
+            SELECT * FROM users
+            LIMIT %s OFFSET %s
+            """,
+            (limit, start)
+        )
         return cursor.fetchall()
 
     # Add an order to the database
@@ -105,3 +111,21 @@ class Users:
         if user is None:
             raise CustomException("Invalid username or password")
         return user["userID"]
+    
+    # Promotes a user to admin
+    def promote_user(self, userID: int):
+        cursor = self.connection.cursor(dictionary=True)
+        user = self.get_user(userID)
+        if user is None:
+            raise CustomException("User not found")
+        elif user["isAdmin"]:
+            raise CustomException("User is already an admin")
+        cursor.execute("UPDATE users SET isAdmin = 1 WHERE userID = %s", (userID,))
+        self.connection.commit()
+
+    # Deletes a user from the database
+    def delete_user(self, userID: int):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("DELETE FROM users WHERE userID = %s", (userID,))
+        self.connection.commit()
+        return cursor.rowcount
