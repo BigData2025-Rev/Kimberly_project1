@@ -83,8 +83,7 @@ def view_books():
             show_paged_table(book_manager.get_all_books)
         elif selected == 1:
             title = input("Enter the title of the book you would like to search for: ")
-            books = book_manager.get_book_by_title(title)
-            print_book_table(books) #Note to make this a paged table
+            show_paged_table(book_manager.get_book_by_title, title)
         elif selected == 2:
             try:
                 bookID = int(input("Enter the book ID: "))

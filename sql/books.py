@@ -22,10 +22,16 @@ class Books:
         self.connection = connection
 
     # Searches for books in the dataset by title
-    def get_book_by_title(self, title: str) -> dict:
+    def get_book_by_title(self, start: int, limit: int, title: str) -> dict:
         cursor = self.connection.cursor(dictionary=True)
-        query = "SELECT * FROM books WHERE LOWER(title) LIKE LOWER(%s)"
-        cursor.execute(query, (f"%{title}%",))
+        cursor.execute(
+            """
+            SELECT bookID, title, authors FROM books
+            WHERE title LIKE %s
+            LIMIT %s OFFSET %s
+            """,
+            (f"%{title}%", limit, start)
+        )
         return cursor.fetchall()
 
     # Returns all books in the dataset, ordered alphabetically by title
