@@ -105,6 +105,26 @@ class Books:
         
         return results[0]
 
+    # Add category
+    def add_category(self, category: str) -> int:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("INSERT INTO Categories (categoryName) VALUES (%s)", (category,))
+        self.connection.commit()
+        return cursor.lastrowid
+    
+    #Get category by name
+    def get_category_by_name(self, category: str) -> dict:
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM Categories WHERE categoryName = %s", (category,))
+        return cursor.fetchone()
+    
+    #Adds a relationship between a book and a category
+    def add_book_category(self, bookID: int, categoryID: int):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute("INSERT INTO BooksCategories (bookID, categoryID) VALUES (%s, %s)", (bookID, categoryID))
+        self.connection.commit()
+        return cursor.lastrowid
+
     # Adds a book to the database
     def add_book(self, book: dict) -> int:
         cursor = self.connection.cursor(dictionary=True)
@@ -117,6 +137,7 @@ class Books:
         )
         self.connection.commit()
         return cursor.lastrowid
+
     
     # Deletes a book from the database
     def delete_book(self, bookID: int):

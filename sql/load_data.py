@@ -1,12 +1,14 @@
 import csv
 import os
+from mysql.connector.errors import IntegrityError
 
 FILE_NAME = 'datafiles/bookstest.csv'
+ENCODING = 'utf-8'
 
 
 # Load data from a CSV file into an array
 def read_csv(file_path):
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding=ENCODING) as file:
         reader = csv.reader(file)
         data = list(reader)
     return data
@@ -29,9 +31,8 @@ def create_tables(cursor):
     cursor.execute("CREATE TABLE IF NOT EXISTS Orders (orderID INT AUTO_INCREMENT PRIMARY KEY, userID INT, bookID INT, orderDate DATE, " \
                    "FOREIGN KEY (userID) REFERENCES Users(userID) ON DELETE SET NULL, FOREIGN KEY (bookID) REFERENCES Books(bookID) ON DELETE SET NULL)")
 
-def add_data(csv_path, connection, books):
+def add_data(csv_path, books):
     data = read_csv(csv_path)
-    cursor = connection.cursor()
     for row in data[1:]:
         if row[2] == '':
             row[2] = 'description not available'
@@ -42,14 +43,15 @@ def add_data(csv_path, connection, books):
         if len(categories) == 0:
             categories = ['Other']
         for category in categories:
-            cursor.execute(f"SELECT categoryID FROM Categories WHERE categoryName = '{category}'")
-            cat = cursor.fetchone()
-            if cat is None:
-                cursor.execute(f"INSERT INTO Categories (categoryName) VALUES ('{category}')")
-                categoryID = cursor.lastrowid
-            else:
-                categoryID = cat[0]
-            cursor.execute(f"INSERT INTO BooksCategories (bookID, categoryID) VALUES ('{book_id}', '{categoryID}')")
+            try:
+                cat = books.get_category_by_name(category)
+                if cat is None:
+                    categoryID = books.add_category(category)
+                else:
+                    categoryID = cat['categoryID']
+                books.add_book_category(book_id, categoryID)
+            except IntegrityError as e:
+                print(f"Error adding category relation {row[0]}: {e}")
 
 # Load data from the CSV file and add to database if the database is empty.
 # If force is specified, will remove all data and reload it.
@@ -63,5 +65,5 @@ def load_data(connection, books, force=False):
 
     #data = read_csv(FILE_NAME)
     create_tables(cursor)
-    add_data(FILE_NAME, connection, books)
+    add_data(FILE_NAME, books)
     

@@ -18,7 +18,7 @@ book_manager = Books(connection)
 user_manager = Users(connection)
 
 # Load data into the database
-load_data.load_data(connection, book_manager, force=False)
+load_data.load_data(connection, book_manager, force=True)
 connection.commit()
 
 
