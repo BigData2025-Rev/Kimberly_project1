@@ -4,6 +4,7 @@ from sql.books import Books
 from display_data import *
 from exceptions.custom_exception import CustomException
 import datetime
+import bcrypt
 
 PAGING_SIZE = 15
 
@@ -17,7 +18,7 @@ book_manager = Books(connection)
 user_manager = Users(connection)
 
 # Load data into the database
-load_data.load_data(connection, book_manager, force=True)
+load_data.load_data(connection, book_manager, force=False)
 connection.commit()
 
 
@@ -64,7 +65,7 @@ def order_book():
             print("Book not found. Please enter a valid book ID")
     
     timestamp = datetime.datetime.now().date()
-    print(f"Ordering book {book['title']}, price: {book['startingPrice']}")
+    print(f"Ordering book {book['title']}, price: {book['price']}")
     confirm = input("Confirm order? (y/n): ")
     if confirm.lower() == 'y':
         user_manager.add_order(user, book['bookID'], timestamp)

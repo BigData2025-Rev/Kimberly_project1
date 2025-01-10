@@ -1,4 +1,7 @@
 # Kimberly_project1
+
+To run project, create .env file in root directory with the following variables:
+USER, PASSWORD, HOST
  
 https://www.kaggle.com/datasets/elvinrustam/books-dataset?select=BooksDatasetClean.csv
 

@@ -3,7 +3,7 @@ from pandas.api.types import is_string_dtype
 import tabulate
 import os
 
-WRAP_WIDTH = 40
+WRAP_WIDTH = 60
 
 #pd.set_option('display.max_colwidth', 20)
 def clear_screen():

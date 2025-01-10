@@ -1,4 +1,5 @@
 from exceptions.custom_exception import CustomException
+import bcrypt
 
 # Users table:
 # - userID: A unique Identification number for each user
@@ -20,6 +21,7 @@ class Users:
     # Create a new user in the database
     def create_user(self, username: str, password: str, is_admin: bool) -> int:
         cursor = self.connection.cursor(dictionary=True)
+        hashed_password = self.hash_password(password)
         cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         if cursor.fetchone() is not None:
             raise CustomException("Username already exists")
@@ -28,7 +30,7 @@ class Users:
             INSERT INTO users (username, password, isAdmin) 
             VALUES (%s, %s, %s)
             """,
-            (username, password, is_admin),
+            (username, hashed_password, is_admin),
         )
         self.connection.commit()
         return cursor.lastrowid
@@ -90,10 +92,10 @@ class Users:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT Orders.orderID, Users.username, Books.title, Orders.orderDate
+            SELECT Orders.orderID, COALESCE(Users.username, 'deleted user') AS username, COALESCE(Books.title, 'Book not available') AS title, Orders.orderDate
             FROM Orders
-            JOIN Users ON Orders.userID = Users.userID
-            JOIN Books ON Orders.bookID = Books.bookID
+            LEFT JOIN Users ON Orders.userID = Users.userID
+            LEFT JOIN Books ON Orders.bookID = Books.bookID
             LIMIT %s OFFSET %s
             """,
             (limit, start)
@@ -104,12 +106,14 @@ class Users:
     def login(self, username: str, password: str) -> int:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
-            "SELECT userID FROM users WHERE username = %s AND password = %s",
-            (username, password),
+            "SELECT userID, password FROM users WHERE username = %s",
+            (username,),
         )
         user = cursor.fetchone()
         if user is None:
             raise CustomException("Invalid username or password")
+        if not self.verify_password(password, user["password"]):
+            raise CustomException("Invalid username or password")   
         return user["userID"]
     
     # Promotes a user to admin
@@ -129,3 +133,10 @@ class Users:
         cursor.execute("DELETE FROM users WHERE userID = %s", (userID,))
         self.connection.commit()
         return cursor.rowcount
+
+
+    def hash_password(self, password):
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    def verify_password(self, password, hashed):
+        return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))

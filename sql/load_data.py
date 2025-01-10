@@ -27,7 +27,7 @@ def create_tables(cursor):
     cursor.execute("CREATE TABLE IF NOT EXISTS Users (userID INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(255), password VARCHAR(255), "\
                    "isAdmin BOOLEAN)")
     cursor.execute("CREATE TABLE IF NOT EXISTS Orders (orderID INT AUTO_INCREMENT PRIMARY KEY, userID INT, bookID INT, orderDate DATE, " \
-                   "FOREIGN KEY (userID) REFERENCES Users(userID) ON DELETE CASCADE, FOREIGN KEY (bookID) REFERENCES Books(bookID) ON DELETE SET NULL)")
+                   "FOREIGN KEY (userID) REFERENCES Users(userID) ON DELETE SET NULL, FOREIGN KEY (bookID) REFERENCES Books(bookID) ON DELETE SET NULL)")
 
 def add_data(csv_path, connection, books):
     data = read_csv(csv_path)
