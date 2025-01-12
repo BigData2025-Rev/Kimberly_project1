@@ -5,8 +5,15 @@ from display_data import *
 from exceptions.custom_exception import CustomException
 import datetime
 import logging
+import signal
 
 PAGING_SIZE = 15
+
+def handle_sigint(sig, frame):
+    logging.info("Received SIGINT. Exiting")
+    exit(0)
+
+signal.signal(signal.SIGINT, handle_sigint)
 
 # Set up logging
 if not os.path.exists("logs"):
@@ -16,6 +23,8 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s:%(levelname)s:%(message)s'
 )
+
+
 
 
 
@@ -58,7 +67,7 @@ def show_paged_table(data_function : callable, *args):
             break
     
 
-
+#Order book function
 def order_book():
     book = None
     while book is None:
@@ -84,7 +93,7 @@ def order_book():
     input("Press enter to return to menu")
 
 
-
+#Provides various ways for the user to see the books in the database
 def view_books():
     while True:
         selected = options_prompt(["View all Books", "Search for a Book", "View Book Details", "View Categories", "Search by Category", "Back"], "What would you like to do?")
@@ -120,6 +129,7 @@ def view_books():
 def view_orders(userID):
     show_paged_table(user_manager.get_all_user_orders, userID)
 
+#Admin functions for managing users
 def manage_users(userID):
     options = ["View all users", "Add user", "Delete user", "Add Admin", "Back"]
     while True:
@@ -159,6 +169,8 @@ def manage_users(userID):
         else:
             break
 
+
+#Admin functions for managing books
 def manage_books():
     options = ["Add Book", "Remove Book", "Update Price", "Back"]
     while True:
@@ -183,7 +195,7 @@ def manage_books():
                 print("Book not found")
             else:
                 print("Book deleted successfully")
-            print("Press enter to continue")
+            input("Press enter to continue")
         elif options[selected] == "Update Price":
             try:
                 bookID = int(input("Enter the book ID: "))
@@ -246,9 +258,7 @@ while user is None:
         exit()
 
 while True:
-    #Create a separate admin prompt that additionally includes: view all users, view all orders, manage users, manage books
     options = ["Browse books", "View orders", "Order book", "Exit"]
-    #selected = options_prompt(["Browse books", "View orders", "Order book", "Exit"], f"Welcome {user_manager.get_user(user)['username']}! What would you like to do?")
     if user_manager.get_user(user)['isAdmin']:
         options.insert(0, "View Admin Panel")
 
@@ -264,4 +274,5 @@ while True:
     elif options[selected] == "Order book":
         order_book()
 
+logging.info("Closing connection")
 connection.close()

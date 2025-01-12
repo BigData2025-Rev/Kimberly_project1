@@ -1,20 +1,22 @@
 import csv
 import os
 from mysql.connector.errors import IntegrityError
+import logging
 
-FILE_NAME = 'datafiles/bookstest.csv'
+FILE_NAME = 'bookstest.csv'
 ENCODING = 'utf-8'
 
 
 # Load data from a CSV file into an array
 def read_csv(file_path):
-    with open(file_path, 'r', encoding=ENCODING) as file:
+    with open('datafiles/' + file_path, 'r', encoding=ENCODING) as file:
         reader = csv.reader(file)
         data = list(reader)
     return data
 
 # Recreates the tables in the database
 def create_tables(cursor):
+    logging.info("Creating tables")
     cursor.execute("DROP TABLE IF EXISTS Orders")
     cursor.execute("DROP TABLE IF EXISTS Users")
     cursor.execute("DROP TABLE IF EXISTS BooksCategories")
@@ -39,7 +41,7 @@ def add_data(csv_path, books):
         book_id = books.add_book({'title': row[0], 'authors': row[1], 'description': row[2], 'publisher': row[4], 
                           'startingPrice': row[5], 'publishedMonth': row[6], 'publishedYear': row[7]})
         
-        if not row[3]:  # Check if row[3] is empty or None
+        if not row[3]:
             categories = ['Other']
         else:
             categories = row[3].split(',')
@@ -53,7 +55,7 @@ def add_data(csv_path, books):
                     categoryID = cat['categoryID']
                 books.add_book_category(book_id, categoryID)
             except IntegrityError as e:
-                print(f"Error adding category relation {row[0]}: {e}")
+                logging.error(f"Error adding book relation {row[0]}: {e}")
 
 # Load data from the CSV file and add to database if the database is empty.
 # If force is specified, will remove all data and reload it.
@@ -65,7 +67,7 @@ def load_data(connection, books, force=False):
         if len(tables) > 0:
             return
 
-    #data = read_csv(FILE_NAME)
+    logging.info("Beginning data load")
     create_tables(cursor)
     add_data(FILE_NAME, books)
     
