@@ -38,10 +38,12 @@ def add_data(csv_path, books):
             row[2] = 'description not available'
         book_id = books.add_book({'title': row[0], 'authors': row[1], 'description': row[2], 'publisher': row[4], 
                           'startingPrice': row[5], 'publishedMonth': row[6], 'publishedYear': row[7]})
-        categories = row[3].split(',')
-        categories = [category.strip() for category in categories]
-        if len(categories) == 0:
+        
+        if not row[3]:  # Check if row[3] is empty or None
             categories = ['Other']
+        else:
+            categories = row[3].split(',')
+            categories = [category.strip() for category in categories]
         for category in categories:
             try:
                 cat = books.get_category_by_name(category)

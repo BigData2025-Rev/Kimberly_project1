@@ -1,3 +1,5 @@
+import logging
+
 # Books table:
 # - bookID: A unique Identification number for each book/series
 # - title: The name under which the book was published
@@ -26,7 +28,8 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT bookID, title, authors FROM books
+            SELECT bookID, title, authors, startingPrice as price
+            FROM books
             WHERE title LIKE %s
             LIMIT %s OFFSET %s
             """,
@@ -39,7 +42,8 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT bookId, title, authors FROM books
+            SELECT bookId, title, authors, startingPrice as price
+            FROM books
             ORDER BY title
             LIMIT %s OFFSET %s
             """,
@@ -52,7 +56,7 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT Categories.categoryID, categoryName, COUNT(bookID) as bookCount
+            SELECT Categories.categoryID, categoryName as categoryName, COUNT(bookID) as bookCount
             FROM Categories
             JOIN BooksCategories ON Categories.categoryID = BooksCategories.categoryID
             GROUP BY Categories.categoryID
@@ -110,6 +114,7 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute("INSERT INTO Categories (categoryName) VALUES (%s)", (category,))
         self.connection.commit()
+        logging.info(f"Added category {category}")
         return cursor.lastrowid
     
     #Get category by name
@@ -123,6 +128,7 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute("INSERT INTO BooksCategories (bookID, categoryID) VALUES (%s, %s)", (bookID, categoryID))
         self.connection.commit()
+        logging.info(f"Added book {bookID} to category {categoryID}")
         return cursor.lastrowid
 
     # Adds a book to the database
@@ -136,6 +142,7 @@ class Books:
             (book['title'], book['authors'], book['description'], book['publisher'], book['startingPrice'], book['publishedMonth'], book['publishedYear'])
         )
         self.connection.commit()
+        logging.info(f"Added book {book['title']}")
         return cursor.lastrowid
 
     
@@ -143,6 +150,7 @@ class Books:
     def delete_book(self, bookID: int):
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute("DELETE FROM books WHERE bookID = %s", (bookID,))
+        logging.info(f"Deleted book {bookID}")
         self.connection.commit()
 
     # Updates the details of a book in the database
@@ -150,6 +158,7 @@ class Books:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute("UPDATE books SET startingPrice = %s WHERE bookID = %s", (new_price, bookID))
         self.connection.commit()
+        logging.info(f"Updated book {bookID} with new price {new_price}")
         return cursor.rowcount
 
 

@@ -1,5 +1,6 @@
 from exceptions.custom_exception import CustomException
 import bcrypt
+import logging
 
 # Users table:
 # - userID: A unique Identification number for each user
@@ -24,6 +25,7 @@ class Users:
         hashed_password = self.hash_password(password)
         cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         if cursor.fetchone() is not None:
+            logging.error(f"User {username} already exists")
             raise CustomException("Username already exists")
         cursor.execute(
             """
@@ -33,6 +35,7 @@ class Users:
             (username, hashed_password, is_admin),
         )
         self.connection.commit()
+        logging.info(f"User {username} created")
         return cursor.lastrowid
 
     # Get a user from the database
@@ -64,6 +67,7 @@ class Users:
             (user_id, book_id, order_date),
         )
         self.connection.commit()
+        logging.info(f"Order added for user {user_id}")
         return cursor.lastrowid
 
     # Get an order from the database
@@ -110,10 +114,13 @@ class Users:
             (username,),
         )
         user = cursor.fetchone()
-        if user is None:
+        if (user is None) or (not self.verify_password(password, user["password"])):
+            logging.error(f"Failed login attempt for user {username}")
             raise CustomException("Invalid username or password")
-        if not self.verify_password(password, user["password"]):
-            raise CustomException("Invalid username or password")   
+        # if not self.verify_password(password, user["password"]):
+        #     logging.error(f"Failed login attempt for user {username}")
+        #     raise CustomException("Invalid username or password")
+        logging.info(f"User {username} logged in")  
         return user["userID"]
     
     # Promotes a user to admin
@@ -125,6 +132,7 @@ class Users:
         elif user["isAdmin"]:
             raise CustomException("User is already an admin")
         cursor.execute("UPDATE users SET isAdmin = 1 WHERE userID = %s", (userID,))
+        logging.info(f"User {user['username']} promoted to admin")
         self.connection.commit()
 
     # Deletes a user from the database
@@ -132,6 +140,7 @@ class Users:
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute("DELETE FROM users WHERE userID = %s", (userID,))
         self.connection.commit()
+        logging.info(f"Deleted user {userID}")
         return cursor.rowcount
 
 

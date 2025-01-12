@@ -4,13 +4,24 @@ from sql.books import Books
 from display_data import *
 from exceptions.custom_exception import CustomException
 import datetime
-import bcrypt
+import logging
 
 PAGING_SIZE = 15
 
+# Set up logging
+if not os.path.exists("logs"):
+    os.makedirs("logs")
+logging.basicConfig(
+    filename='logs/bookstore.log',
+    level=logging.DEBUG,
+    format='%(asctime)s:%(levelname)s:%(message)s'
+)
+
+
+
 # Connect to the database
 (cursor, connection) = connect.connect()
-print("Connected to the database")
+logging.info("Connected to the database")
 #use the database
 cursor.execute("USE project1")
 
@@ -18,7 +29,7 @@ book_manager = Books(connection)
 user_manager = Users(connection)
 
 # Load data into the database
-load_data.load_data(connection, book_manager, force=True)
+load_data.load_data(connection, book_manager, force=False)
 connection.commit()
 
 
@@ -26,10 +37,8 @@ connection.commit()
 
 
 #Create default admin user for testing
-try:
+if user_manager.get_user(1) is None:
     user_manager.create_user("admin", "admin", True)
-except CustomException as e:
-    pass
     
 
 #Function to display a paged table
@@ -157,9 +166,10 @@ def manage_books():
         if options[selected] == "Add Book":
             path = input("Enter the path to the CSV file: ")
             try:
-                load_data.add_data(path, connection, book_manager)
+                load_data.add_data(path, book_manager)
                 print("Books added successfully")
             except FileNotFoundError as e:
+                logging.error(f"File not found: {path}")
                 print(e)
             input("Press enter to continue")
         elif options[selected] == "Remove Book":
@@ -181,7 +191,7 @@ def manage_books():
             except:
                 print("Invalid input. Please enter a number.")
                 continue
-            rows = book_manager.update_book_price(bookID, price)
+            rows = book_manager.update_book(bookID, price)
             if rows == 0:
                 print("Book not found")
             else:
