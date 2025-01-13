@@ -33,6 +33,7 @@ def create_tables(cursor):
     cursor.execute("CREATE TABLE IF NOT EXISTS Orders (orderID INT AUTO_INCREMENT PRIMARY KEY, userID INT, bookID INT, orderDate DATE, " \
                    "FOREIGN KEY (userID) REFERENCES Users(userID) ON DELETE SET NULL, FOREIGN KEY (bookID) REFERENCES Books(bookID) ON DELETE SET NULL)")
 
+# Add data from a CSV file to the database
 def add_data(csv_path, books):
     data = read_csv(csv_path)
     for row in data[1:]:

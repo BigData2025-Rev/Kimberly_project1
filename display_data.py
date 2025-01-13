@@ -40,7 +40,6 @@ def print_book_table(data : list[dict]):
         for col in df.columns:
             if is_string_dtype(df[col]):
                 df[col] = df[col].str.wrap(20)
-        #set description wrap width to 80
         df['description'] = df['description'].str.wrap(80)
 
 

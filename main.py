@@ -31,7 +31,6 @@ logging.basicConfig(
 # Connect to the database
 (cursor, connection) = connect.connect()
 logging.info("Connected to the database")
-#use the database
 cursor.execute("USE project1")
 
 book_manager = Books(connection)
@@ -172,10 +171,10 @@ def manage_users(userID):
 
 #Admin functions for managing books
 def manage_books():
-    options = ["Add Book", "Remove Book", "Update Price", "Back"]
+    options = ["Add Books", "Remove Book", "Update Price", "Back"]
     while True:
         selected = options_prompt(options, "Manage Books")
-        if options[selected] == "Add Book":
+        if options[selected] == "Add Books":
             path = input("Enter the path to the CSV file: ")
             try:
                 load_data.add_data(path, book_manager)

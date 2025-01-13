@@ -117,9 +117,6 @@ class Users:
         if (user is None) or (not self.verify_password(password, user["password"])):
             logging.error(f"Failed login attempt for user {username}")
             raise CustomException("Invalid username or password")
-        # if not self.verify_password(password, user["password"]):
-        #     logging.error(f"Failed login attempt for user {username}")
-        #     raise CustomException("Invalid username or password")
         logging.info(f"User {username} logged in")  
         return user["userID"]
     
